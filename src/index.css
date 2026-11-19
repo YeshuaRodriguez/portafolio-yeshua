@@ -2,13 +2,13 @@
 
 @font-face {
   font-family: "Akira";
-  src: url("../fonts/AkiraExpanded.otf") format("opentype");
+  src: url("../assets/fonts/AkiraExpanded.otf") format("opentype");
   font-display: swap;
 }
 
 @font-face {
   font-family: "DM Sans";
-  src: url("../fonts/DMSans-Regular.ttf") format("truetype");
+  src: url("../assets/fonts/DMSans-Regular.ttf") format("truetype");
   font-display: swap;
 }
 
@@ -27,6 +27,8 @@
   --inProgress: oklch(82.8% 0.189 84.429);
 
   --red-primary: #CC4646;
+
+  --cream: #e8e0d5;
 
 }
 
@@ -47,6 +49,8 @@
   --color-page-accent: var(--page-accent);
 
   --color-red-primary: var(--red-primary);
+
+  --color-cream: var(--cream);
 
 }
 

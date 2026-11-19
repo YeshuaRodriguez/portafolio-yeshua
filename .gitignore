@@ -25,3 +25,8 @@ dist-ssr
 
 # Design reference zips
 *.zip
+
+# Environment variables
+.env
+.env.*
+!.env.example

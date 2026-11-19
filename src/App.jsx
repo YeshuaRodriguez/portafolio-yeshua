@@ -10,7 +10,7 @@ import Tooltip from './Components/ui/Tooltip'
 
 function App() {
   return (
-    <main className=" flex flex-col min-h-screen bg-page-bg px-4 py-6 text-white sm:px-6 lg:px-8 font-dm-sans gap-50">
+    <main className=" flex flex-col min-h-screen bg-page-bg px-4 py-6 text-cream sm:px-6 lg:px-8 font-dm-sans gap-50">
 
       <div className='flex flex-row justify-center items-center gap-0'>
         <QuickNav/>

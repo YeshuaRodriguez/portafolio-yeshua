@@ -1,10 +1,10 @@
 import { useEffect } from 'react'
 import { motion, useMotionValue, useTransform } from 'motion/react'
-import HeroBg from "../../img/HEROBG.png"
-import PanelsBg from "../../img/PANELSBG.png"
-import HeroTitle from "../../img/HEROTITLE.png"
-import HeroProfile from "../../img/HEROPROFILE.png"
-import HeroNoise from "../../img/HERONOISE.png"
+import HeroBg from "../../assets/img/hero/HEROBG.webp"
+import PanelsBg from "../../assets/img/hero/PANELSBG.webp"
+import HeroTitle from "../../assets/img/hero/HEROTITLE.webp"
+import HeroProfile from "../../assets/img/hero/HEROPROFILE.webp"
+import HeroNoise from "../../assets/img/hero/HERONOISE.webp"
 
 
 function HeroLayer({ src, zIndex, strength, mouseX, mouseY, className }) {
@@ -40,7 +40,7 @@ export default function Hero() {
   const layers = [
     { src: HeroBg, zIndex: 0, strength: 24, className: 'absolute inset-0 h-full w-full object-cover scale-110', alt: 'Hero background' },
     { src: PanelsBg, zIndex: 1, strength: 18, className: 'absolute inset-0 h-full w-full object-contain', alt: 'Hero panels' },
-    { src: HeroTitle, zIndex: 2, strength: 14, className: 'absolute inset-0 h-full w-full object-contain', alt: 'Hero title' },
+    { src: HeroTitle, zIndex: 2, strength: 14, className: 'absolute inset-0 h-full w-full object-contain -translate-y-35 scale-90', alt: 'Hero title' },
     { src: HeroProfile, zIndex: 3, strength: 8, className: 'absolute inset-0 h-full w-full scale-[1.2] object-contain', alt: 'Hero profile' },
     { src: HeroNoise, zIndex: 4, strength: 4, className: 'absolute inset-0 h-full w-full object-cover opacity-70 mix-blend-screen', alt: 'Hero noise' },
   ]

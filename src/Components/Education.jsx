@@ -1,11 +1,5 @@
 
-import SectionTitle from "./ui/titles/SectionTitle"
 import { useState } from "react"
-
-import { ChevronDown, ChevronUp } from "lucide-react"
-import { GraduationCap } from "lucide-react";
-import { BookMarked } from "lucide-react";
-import { ClockFading } from "lucide-react";
 
 const stateClasses = {
     active: "bg-active",
@@ -18,9 +12,9 @@ function CurrentState({ state }) {
 }
 
 const sections = {
-    certification: { title: "CERTIFICATIONS", icon: <GraduationCap /> },
-    course: { title: "COURSES", icon: <BookMarked /> },
-    future: { title: "FUTURE PLANS", icon: <ClockFading /> },
+    certification: { title: "CERTIFICATIONS" },
+    course: { title: "COURSES" },
+    future: { title: "FUTURE PLANS" },
 }
 
 const education = [
@@ -56,47 +50,57 @@ function Education() {
 
     return (
 
-        <>
-            <div id="education" className="flex flex-col justify-center text-center scroll-mt-10">
-                <SectionTitle title="Education" subtitle="3. 私の教育" />
+        <section id="education" className="mx-auto flex w-full max-w-6xl scroll-mt-10 flex-col gap-12 lg:flex-row lg:gap-16">
 
-                <div className="flex flex-col max-w-200 justify-center m-auto gap-6">
-
-                    <div className="flex flex-col">
-                        <h2 className="text-xl tracking-wider">COMPUTER SCIENCE ENGINEERING DEGREE</h2>
-                        <p className="italic text-sm">Universidad Católica de Honduras - 2026</p>
-                    </div>
-
-                    <div className="flex flex-col gap-5 min-w-150">
-                        {Object.entries(sections).map(([type, { title, icon }]) => (
-                            <div key={type} className="flex flex-col items-start">
-                                <button className="flex cursor-pointer font-bold tracking-widest text-lg gap-2" onClick={() => toggle(type)}>
-                                    {icon} {title} {closed[type] ? <ChevronDown /> : <ChevronUp />}
-                                </button>
-                                {!closed[type] && (
-                                    <ul className="text-start">
-                                        {education.filter((item) => item.type === type).map((item) => (
-                                            <li key={item.name} className="flex gap-2 items-center">
-                                                <CurrentState state={item.status} />
-                                                {item.link
-                                                    ? <a href={item.link} target="_blank" rel="noopener noreferrer" className="underline decoration-white/30 underline-offset-4 transition-colors hover:text-red-primary">{item.name}</a>
-                                                    : item.name} | <span className="font-light text-white/30">{item.issuer}{item.year ? ` - ${item.year}` : ""}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-
-                </div>
-
+            <div className="flex w-full shrink-0 flex-col gap-3.5 lg:w-[340px]">
+                <h2 className="font-akira text-[34px] font-black tracking-wide">EDUCATION</h2>
+                <p className="text-sm tracking-widest text-red-primary">3. 私の教育</p>
+                <hr className="my-2.5 h-0.5 w-16 border-0 bg-cream" />
+                <p className="text-[17px] leading-snug tracking-wider">COMPUTER SCIENCE ENGINEERING DEGREE</p>
+                <p className="text-[13px] italic text-cream/70">Universidad Católica de Honduras - 2026</p>
             </div>
 
-        </>
+            <div className="relative flex min-w-0 flex-1 flex-col gap-3 border-l-2 border-cream pl-9">
+                {Object.entries(sections).map(([type, { title }]) => {
+                    const items = education.filter((item) => item.type === type)
+                    const isOpen = !closed[type]
+
+                    return (
+                        <div key={type} className="relative">
+                            <span aria-hidden="true" className="absolute -left-[46px] top-5 h-[18px] w-[18px] rotate-45 border-[3px] border-page-bg bg-red-primary" />
+
+                            <button
+                                type="button"
+                                onClick={() => toggle(type)}
+                                aria-expanded={isOpen}
+                                className="flex w-full cursor-pointer items-center gap-4 border-b border-cream/30 py-3.5 text-left"
+                            >
+                                <span className="flex-1 font-akira text-[19px] font-black">{title}</span>
+                                <span className="text-[13px] text-cream/50">{String(items.length).padStart(2, "0")}</span>
+                                <span className="w-[22px] text-right text-[22px]" aria-hidden="true">{isOpen ? "−" : "+"}</span>
+                            </button>
+
+                            {isOpen && (
+                                <ul className="flex flex-col gap-0.5 pb-3.5 pt-2 text-start">
+                                    {items.map((item) => (
+                                        <li key={item.name} className="flex items-center gap-2 py-1.5">
+                                            <CurrentState state={item.status} />
+                                            <span>
+                                                {item.link
+                                                    ? <a href={item.link} target="_blank" rel="noopener noreferrer" className="underline decoration-cream/30 underline-offset-4 transition-colors hover:text-red-primary">{item.name}</a>
+                                                    : item.name} | <span className="font-light text-cream/30">{item.issuer}{item.year ? ` - ${item.year}` : ""}</span>
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                    )
+                })}
+            </div>
+
+        </section>
 
     )
-
-
 
 } export default Education

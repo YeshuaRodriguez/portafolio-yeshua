@@ -1,4 +1,6 @@
 import SectionTitle from "./ui/titles/SectionTitle"
+import { Download } from "lucide-react"
+
 
 export default function About() {
 
@@ -17,14 +19,15 @@ export default function About() {
                 <div className='flex flex-col justify-center gap-2'>
                     <div className='flex gap-2 items-center'>
                         <h2 className={experienceClassname}>+2</h2>
-                        <p className="flex flex-col gap-0 font-dm-sans text-sm">Years <span>In Web Dev</span></p>
+                        <p className="flex flex-col gap-0 font-dm-sans text-sm">Years <span>In Dev</span></p>
                     </div>
                     <div className='flex gap-2 items-center'>
-                        <h2 className={experienceClassname}>+5</h2>
+                        <h2 className={experienceClassname}>+10</h2>
                         <p className="font-dm-sans flex flex-col text-sm gap-0">Projects in <span>professional fields</span></p>
                     </div>
                 </div>
             </div>
+            <a href="/cv-yeshua-rodriguez.pdf" download="Yeshua-Rodriguez-CV.pdf"><button className="bg-red-primary text-page-bg cursor-pointer p-3 rounded-md mt-20 tracking-wider font-bold hover:animate-pulse flex gap-4 border-2 border-red-400">Descargar CV <Download/></button></a>
         </div>
     </>
 

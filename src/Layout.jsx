@@ -29,7 +29,7 @@ export default function Layout() {
   return (
     <>
       <div className="fixed right-0 top-0 z-50 flex h-screen justify-center px-6">
-        <div className="my-4 h-70 w-2 overflow-hidden rounded-full bg-white/10">
+        <div className="my-4 h-70 w-2 overflow-hidden rounded-full bg-cream/10">
           <div
             className="w-full rounded-full bg-red-primary transition-[height] duration-75 ease-out"
             style={{ height: `${scrollProgress}%` }}

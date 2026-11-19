@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react"
 import { AlertCircle } from "lucide-react"
 
 // alert: nodo opcional (ej. <Tooltip .../>) que se muestra al hacer click en el ícono
-export default function SectionTitle({title, subtitle, subtitleX=2, subtitleY=5, alert=null}){
+// alertClassName: posición/ancho del popup (clases completas, ver gotcha de Tailwind)
+export default function SectionTitle({title, subtitle, subtitleX=2, subtitleY=5, alert=null, alertClassName="absolute right-0 top-8 w-72"}){
 
     const [open, setOpen] = useState(false)
     const alertRef = useRef(null)
@@ -42,11 +43,11 @@ export default function SectionTitle({title, subtitle, subtitleX=2, subtitleY=5,
                         aria-label="Show notice"
                         className="relative flex h-5 w-5 cursor-pointer items-center justify-center"
                     >
-                        <AlertCircle size={20} className="absolute animate-ping text-white/40" aria-hidden="true" />
-                        <AlertCircle size={20} className="relative text-white/40" aria-hidden="true" />
+                        <AlertCircle size={20} className="absolute animate-ping text-cream/40" aria-hidden="true" />
+                        <AlertCircle size={20} className="relative text-cream/40" aria-hidden="true" />
                     </button>
                     {open && (
-                        <div role="dialog" className="absolute right-0 top-8 w-72 text-left">
+                        <div role="dialog" className={`${alertClassName} text-left`}>
                             {alert}
                         </div>
                     )}
