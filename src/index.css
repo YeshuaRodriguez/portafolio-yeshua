@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Akira";
+  src: url("../fonts/AkiraExpanded.otf") format("opentype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "DM Sans";
+  src: url("../fonts/DMSans-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+
+:root {
+  --page-bg: #262626;
+
+  --page-bg-140: color-mix(in srgb, var(--page-bg), black 40%);
+  --page-bg-130: color-mix(in srgb, var(--page-bg), black 30%);
+  --page-bg-120: color-mix(in srgb, var(--page-bg), black 20%);
+  --page-bg-110: color-mix(in srgb, var(--page-bg), black 10%);
+
+  --page-accent: color-mix(in srgb, var(--page-bg), white 10%);
+
+  --active: oklch(59.6% 0.145 163.225);
+  --inactive:  #CC4646;
+  --inProgress: oklch(82.8% 0.189 84.429);
+
+  --red-primary: #CC4646;
+
+}
+
+@theme {
+  --font-akira: "Akira", sans-serif;
+  --font-dm-sans: "DM Sans", sans-serif;
+  --color-page-bg: var(--page-bg);
+
+  --color-active: var(--active);
+  --color-inactive: var(--inactive);
+  --color-inProgress: var(--inProgress);
+
+  --color-page-bg-140: var(--page-bg-140);
+  --color-page-bg-130: var(--page-bg-130);
+  --color-page-bg-120: var(--page-bg-120);
+  --color-page-bg-110: var(--page-bg-110);
+
+  --color-page-accent: var(--page-accent);
+
+  --color-red-primary: var(--red-primary);
+
+}
+
+.scrollable-element {
+  scrollbar-width: none;       
+  -ms-overflow-style: none;    
+}
+
+.scrollable-element::-webkit-scrollbar {
+  display: none;               
+}
+
+
+::selection{
+
+  background-color: var(--page-bg-140);
+  color: #CC4646;
+
+}
