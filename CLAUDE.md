@@ -37,7 +37,7 @@ There is no test suite.
 - Unused files: `LogoClaude.svg`, `HEROTITLE (1).webp`, `HERONOISE2.webp`.
 - `server/` is the backend (Express 5, CommonJS, own `package.json`/`node_modules`). `cd server && npm run dev` (port 3000, `node --watch --env-file=.env`; `.env` holds `RESEND_API_KEY`, gitignored). `POST /api/contact` sends the form fields as a plain-text email via Resend (`FROM`/`TO` constants in `app.js`); the visitor's email is only info in the body. No validation yet. In dev, Vite proxies `/api` → `localhost:3000` (`vite.config.js`); production hosting is undecided. ESLint has a `server/**` block with Node globals.
 - Domain: `yeshuarodriguez.dev`, DNS on Cloudflare, verified in Resend via Cloudflare auto-setup (root domain and the `mail.` subdomain). Sender and recipient come from `MAIL_FROM` / `MAIL_TO` in `server/.env` (template in `server/.env.example`; `app.js` exits if any var is missing). Don't hardcode the recipient email in committed files (public repo).
-- Planned hosting: front on Cloudflare Pages, backend kept as Express running on Cloudflare Workers (`nodejs_compat` + `httpServerHandler`), routed at `/api/*` on the same domain. In Workers, `MAIL_TO` and `RESEND_API_KEY` go in as secrets (`wrangler secret put`), not in `wrangler.toml` vars. Hardening plan: Turnstile, a WAF rate-limit rule (shared with the CV path), a KV daily cap, schema validation, a fixed `from` with the visitor in `reply_to`, a honeypot and a minimum time.
+- Hosting: two Cloudflare Workers. Front = Worker `portafolio-yeshua` serving `dist/` as static assets (`wrangler.jsonc` at the root, SPA fallback; Workers Builds runs `npm run build` + `npx wrangler deploy`, previews `npx wrangler versions upload`, Node pinned by `.node-version`). API = separate Worker (not built yet) running Express via `nodejs_compat` + `httpServerHandler`, routed at `yeshuarodriguez.dev/api/*`; `app.js` must move to ESM and drop `app.listen`/`process.exit` for that. Branches: `main` = production, `dev` = work/previews. In Workers, `MAIL_TO` and `RESEND_API_KEY` go in as secrets (`wrangler secret put`), not in `wrangler.toml` vars. Hardening plan: Turnstile, a WAF rate-limit rule (shared with the CV path), a KV daily cap, schema validation, a fixed `from` with the visitor in `reply_to`, a honeypot and a minimum time.
 
 ## Theming
 
@@ -58,6 +58,6 @@ Pending:
 - **Projects content:** images for 02/06/08, years (`year: null`), GitHub repos + `githubEnabled`. Project images 1/7/9/10 are 1–1.5 MB; re-export at ~1360 px wide.
 - **CV:** `documents/cvprueba.pdf` is currently published as the CV; replace with the final version when ready.
 - **Badges:** add rest of the badges references to education section.
-- **Tech debt:** `npm run lint` fails only on the unused `Tooltip` import in `App.jsx`; `SectionTitle` dynamic-class bug (see Gotchas); `Layout.jsx`/other leftovers not reviewed.
+- **Tech debt:**  `SectionTitle` dynamic-class bug (see Gotchas); `Layout.jsx`/other leftovers not reviewed.
 - **`index.html`:** `<title>` is still `portafolio-yeshua`; no meta description/OG tags; favicon points to `/favicon.png` (decide whether to use `assets/img/iconos/` instead); confirm `lang`.
 - **QA:** the site has not been verified in a browser at mobile widths (QuickNav next to Hero, new sections). The Vite template `README.md` is unchanged.

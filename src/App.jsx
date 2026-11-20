@@ -6,7 +6,6 @@ import './App.css'
 import QuickNav from './Components/QuickNav'
 import Projects from './Components/Projects'
 import Contact from './Components/Contact'
-import Tooltip from './Components/ui/Tooltip'
 
 function App() {
   return (
