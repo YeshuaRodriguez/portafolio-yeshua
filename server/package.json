@@ -1,18 +1,17 @@
 {
-  "name": "server",
+  "name": "portafolio-yeshua-api",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "start": "node --env-file=.env app.js",
-    "dev": "node --watch --env-file=.env app.js"
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "express": "^5.3.0",
     "resend": "^6.39.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.165.0"
   }
 }

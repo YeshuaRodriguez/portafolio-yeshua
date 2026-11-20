@@ -1,27 +1,32 @@
-const express = require("express");
-const { Resend } = require("resend");
+import express from "express";
+import { Resend } from "resend";
+import { httpServerHandler } from "cloudflare:node";
 
-const app = express();
+// Corre como Cloudflare Worker: Express escucha en un puerto "virtual" y
+// httpServerHandler le pasa las peticiones del Worker (ver wrangler.jsonc).
 const port = 3000;
-
-// Config desde el env (server/.env en local, ver .env.example)
-// MAIL_FROM: remitente del dominio verificado en Resend. MAIL_TO: correo que recibe los mensajes
-const { RESEND_API_KEY, MAIL_FROM, MAIL_TO } = process.env;
-
-const missing = Object.entries({ RESEND_API_KEY, MAIL_FROM, MAIL_TO })
-    .filter(([, value]) => !value)
-    .map(([key]) => key);
-if (missing.length > 0) {
-    console.error(`Missing env vars: ${missing.join(", ")}. Copy server/.env.example to server/.env and fill them in.`);
-    process.exit(1);
-}
-
-const resend = new Resend(RESEND_API_KEY);
+const app = express();
 
 app.use(express.json());
 
+// Config desde el env del Worker (vars + secretos; en local, server/.env).
+// MAIL_FROM: remitente del dominio verificado en Resend. MAIL_TO: correo que recibe los mensajes
+function getConfig() {
+    const { RESEND_API_KEY, MAIL_FROM, MAIL_TO } = process.env;
+    const missing = Object.entries({ RESEND_API_KEY, MAIL_FROM, MAIL_TO })
+        .filter(([, value]) => !value)
+        .map(([key]) => key);
+    return { RESEND_API_KEY, MAIL_FROM, MAIL_TO, missing };
+}
+
 // Por ahora sin validaciones: el correo del visitante es solo información de contacto
 app.post("/api/contact", async (req, res) => {
+    const { RESEND_API_KEY, MAIL_FROM, MAIL_TO, missing } = getConfig();
+    if (missing.length > 0) {
+        console.error(`Missing env vars: ${missing.join(", ")}`);
+        return res.status(500).json({ ok: false });
+    }
+
     const { subject = "", name = "", email = "", phone = "", message = "" } = req.body ?? {};
 
     const text = [
@@ -33,6 +38,7 @@ app.post("/api/contact", async (req, res) => {
         message,
     ].join("\n");
 
+    const resend = new Resend(RESEND_API_KEY);
     const { error } = await resend.emails.send({
         from: MAIL_FROM,
         to: MAIL_TO,
@@ -48,6 +54,6 @@ app.post("/api/contact", async (req, res) => {
     res.json({ ok: true });
 });
 
-app.listen(port, () => {
-    console.log(`Server listening on http://localhost:${port}`);
-});
+app.listen(port);
+
+export default httpServerHandler({ port });

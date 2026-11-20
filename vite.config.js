@@ -10,7 +10,7 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] })
   ],
   server: {
-    // En desarrollo, /api va al server de Express (server/app.js)
-    proxy: { '/api': 'http://localhost:3000' },
+    // En desarrollo, /api va al Worker de la API (cd server && npm run dev)
+    proxy: { '/api': 'http://localhost:8787' },
   },
 })

@@ -1,0 +1,18 @@
+// Worker de la API: Express corriendo en Workers (nodejs_compat + httpServerHandler).
+// Solo atiende /api/* en www; el resto lo sirve el Worker del front (wrangler.jsonc de la raíz).
+// Secretos (no van aquí): RESEND_API_KEY y MAIL_TO, cargados en el dashboard o con `wrangler secret put`.
+// En local, `wrangler dev` los lee de server/.env (ver .env.example).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "portafolio-yeshua-api",
+  "main": "app.js",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    { "pattern": "www.yeshuarodriguez.dev/api/*", "zone_name": "yeshuarodriguez.dev" }
+  ],
+  "vars": {
+    "MAIL_FROM": "Portfolio <contact@mail.yeshuarodriguez.dev>"
+  },
+  "observability": { "enabled": true }
+}
