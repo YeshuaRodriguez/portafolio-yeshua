@@ -13,23 +13,63 @@ app.use(express.json());
 // Config desde el env del Worker (vars + secretos; en local, server/.env).
 // Se lee con `env` de cloudflare:workers (process.env no recibía los secretos en producción).
 // MAIL_FROM: remitente del dominio verificado en Resend. MAIL_TO: correo que recibe los mensajes
+// TURNSTILE_SECRET_KEY: secret del widget de Turnstile (en local, la clave de prueba de Cloudflare)
+// TURNSTILE_HOSTNAMES (opcional): hostnames aceptados en la verificación, separados por coma
 function getConfig() {
-    const { RESEND_API_KEY, MAIL_FROM, MAIL_TO } = env;
-    const missing = Object.entries({ RESEND_API_KEY, MAIL_FROM, MAIL_TO })
+    const { RESEND_API_KEY, MAIL_FROM, MAIL_TO, TURNSTILE_SECRET_KEY, TURNSTILE_HOSTNAMES = "" } = env;
+    const missing = Object.entries({ RESEND_API_KEY, MAIL_FROM, MAIL_TO, TURNSTILE_SECRET_KEY })
         .filter(([, value]) => !value)
         .map(([key]) => key);
-    return { RESEND_API_KEY, MAIL_FROM, MAIL_TO, missing };
+    const allowedHostnames = TURNSTILE_HOSTNAMES.split(",").map((host) => host.trim()).filter(Boolean);
+    return { RESEND_API_KEY, MAIL_FROM, MAIL_TO, TURNSTILE_SECRET_KEY, allowedHostnames, missing };
 }
 
-// Por ahora sin validaciones: el correo del visitante es solo información de contacto
+const SITEVERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+
+// Verifica el token del widget contra Cloudflare. Cada token sirve una sola vez y vence a los 5 min
+async function verifyTurnstile({ token, ip, secret, allowedHostnames }) {
+    if (!token) return false;
+
+    const body = new FormData();
+    body.append("secret", secret);
+    body.append("response", token);
+    if (ip) body.append("remoteip", ip);
+
+    const response = await fetch(SITEVERIFY_URL, { method: "POST", body });
+    const result = await response.json();
+
+    if (!result.success) {
+        console.warn("Turnstile failed:", result["error-codes"]);
+        return false;
+    }
+    if (allowedHostnames.length > 0 && !allowedHostnames.includes(result.hostname)) {
+        console.warn("Turnstile hostname not allowed:", result.hostname);
+        return false;
+    }
+    return true;
+}
+
+// Por ahora sin validaciones de campos: el correo del visitante es solo información de contacto
 app.post("/api/contact", async (req, res) => {
-    const { RESEND_API_KEY, MAIL_FROM, MAIL_TO, missing } = getConfig();
+    const { RESEND_API_KEY, MAIL_FROM, MAIL_TO, TURNSTILE_SECRET_KEY, allowedHostnames, missing } = getConfig();
     if (missing.length > 0) {
         console.error(`Missing env vars: ${missing.join(", ")}`);
         return res.status(500).json({ ok: false });
     }
 
-    const { subject = "", name = "", email = "", phone = "", message = "" } = req.body ?? {};
+    const body = req.body ?? {};
+
+    const isHuman = await verifyTurnstile({
+        token: body["cf-turnstile-response"],
+        ip: req.get("cf-connecting-ip"),
+        secret: TURNSTILE_SECRET_KEY,
+        allowedHostnames,
+    });
+    if (!isHuman) {
+        return res.status(403).json({ ok: false, error: "captcha" });
+    }
+
+    const { subject = "", name = "", email = "", phone = "", message = "" } = body;
 
     const text = [
         `Nombre: ${name}`,

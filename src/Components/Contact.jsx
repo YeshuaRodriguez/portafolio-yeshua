@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { ArrowRight } from "lucide-react"
 import inkSwirl from "../../assets/img/hero/remolino-tinta.webp"
 
@@ -45,29 +45,103 @@ function Field({ field }) {
 
 const statusMessages = {
     sent: { text: "Message sent. Thanks!", className: "text-cream" },
+    captcha: { text: "Please complete the verification and try again.", className: "text-red-primary" },
     error: { text: "Something went wrong, try again.", className: "text-red-primary" },
 }
 
+// Cloudflare Turnstile. En dev se usa la site key de prueba (siempre aprueba, funciona en localhost);
+// la de producción es pública y solo es válida en los hostnames configurados en el widget.
+const TURNSTILE_SITE_KEY = import.meta.env.DEV ? "1x00000000000000000000AA" : "0x4AAAAAAGJ1pj4SJxxq5Lt-"
+const TURNSTILE_SCRIPT = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad"
+
+let turnstilePromise = null
+
+// Carga el script de Turnstile una sola vez y resuelve con window.turnstile
+function loadTurnstile() {
+    if (window.turnstile) return Promise.resolve(window.turnstile)
+    if (!turnstilePromise) {
+        turnstilePromise = new Promise((resolve, reject) => {
+            window.onTurnstileLoad = () => resolve(window.turnstile)
+            const script = document.createElement("script")
+            script.src = TURNSTILE_SCRIPT
+            script.async = true
+            script.onerror = () => {
+                turnstilePromise = null
+                reject(new Error("Turnstile failed to load"))
+            }
+            document.head.appendChild(script)
+        })
+    }
+    return turnstilePromise
+}
+
+// El widget mete un input oculto `cf-turnstile-response` en el form, así que el token
+// viaja solo con el FormData. Devuelve reset() para pedir un token nuevo tras cada envío.
+function useTurnstile(containerRef) {
+    const widgetIdRef = useRef(null)
+
+    useEffect(() => {
+        let cancelled = false
+
+        loadTurnstile()
+            .then((turnstile) => {
+                if (cancelled || !containerRef.current) return
+                widgetIdRef.current = turnstile.render(containerRef.current, {
+                    sitekey: TURNSTILE_SITE_KEY,
+                    theme: "dark",
+                    size: "flexible",
+                })
+            })
+            .catch((error) => console.error(error))
+
+        return () => {
+            cancelled = true
+            if (widgetIdRef.current !== null) window.turnstile?.remove(widgetIdRef.current)
+            widgetIdRef.current = null
+        }
+    }, [containerRef])
+
+    return () => {
+        if (widgetIdRef.current !== null) window.turnstile?.reset(widgetIdRef.current)
+    }
+}
+
 export default function Contact() {
-    // idle | sending | sent | error. Sin validaciones por ahora, ver server/app.js
+    // idle | sending | sent | captcha | error. Sin validaciones de campos por ahora, ver server/app.js
     const [status, setStatus] = useState("idle")
+    const turnstileRef = useRef(null)
+    const resetTurnstile = useTurnstile(turnstileRef)
 
     const handleSubmit = async (event) => {
         event.preventDefault()
         const form = event.currentTarget
+        const data = Object.fromEntries(new FormData(form))
+
+        if (!data["cf-turnstile-response"]) {
+            setStatus("captcha")
+            return
+        }
+
         setStatus("sending")
 
         try {
             const response = await fetch("/api/contact", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(Object.fromEntries(new FormData(form))),
+                body: JSON.stringify(data),
             })
+            if (response.status === 403) {
+                setStatus("captcha")
+                return
+            }
             if (!response.ok) throw new Error(`HTTP ${response.status}`)
             form.reset()
             setStatus("sent")
         } catch {
             setStatus("error")
+        } finally {
+            // Cada token sirve una sola vez: pedir uno nuevo para el próximo envío
+            resetTurnstile()
         }
     }
 
@@ -101,6 +175,8 @@ export default function Contact() {
                     {fields.map((field) => (
                         <Field key={field.id} field={field} />
                     ))}
+
+                    <div ref={turnstileRef} className="min-h-[65px] w-full" />
 
                     <button
                         type="submit"
