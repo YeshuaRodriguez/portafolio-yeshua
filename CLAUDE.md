@@ -35,7 +35,9 @@ There is no test suite.
 - `public/` holds `favicon.png` (what `index.html` uses) and the downloadable CV (`public/cv-yeshua-rodriguez.pdf`, linked from `About.jsx`).
 - Fonts are declared with `@font-face` in `src/index.css` (`url("../assets/fonts/...")`): `Akira` (`font-akira`, display) and `DM Sans` (`font-dm-sans`, body).
 - Unused files: `LogoClaude.svg`, `HEROTITLE (1).webp`, `HERONOISE2.webp`.
-- `server/` is the start of the backend (Express 5, CommonJS, own `package.json`/`node_modules`; `app.js` references Resend but doesn't import it or listen yet). The root ESLint config lints it as browser code, causing `require`/unused-var errors.
+- `server/` is the backend (Express 5, CommonJS, own `package.json`/`node_modules`). `cd server && npm run dev` (port 3000, `node --watch --env-file=.env`; `.env` holds `RESEND_API_KEY`, gitignored). `POST /api/contact` sends the form fields as a plain-text email via Resend (`FROM`/`TO` constants in `app.js`); the visitor's email is only info in the body. No validation yet. In dev, Vite proxies `/api` → `localhost:3000` (`vite.config.js`); production hosting is undecided. ESLint has a `server/**` block with Node globals.
+- Domain: `yeshuarodriguez.dev`, DNS on Cloudflare, verified in Resend via Cloudflare auto-setup (root domain and the `mail.` subdomain). Sender and recipient come from `MAIL_FROM` / `MAIL_TO` in `server/.env` (template in `server/.env.example`; `app.js` exits if any var is missing). Don't hardcode the recipient email in committed files (public repo).
+- Planned hosting: front on Cloudflare Pages, backend kept as Express running on Cloudflare Workers (`nodejs_compat` + `httpServerHandler`), routed at `/api/*` on the same domain. In Workers, `MAIL_TO` and `RESEND_API_KEY` go in as secrets (`wrangler secret put`), not in `wrangler.toml` vars. Hardening plan: Turnstile, a WAF rate-limit rule (shared with the CV path), a KV daily cap, schema validation, a fixed `from` with the visitor in `reply_to`, a honeypot and a minimum time.
 
 ## Theming
 
@@ -51,11 +53,11 @@ All design tokens are in `src/index.css`: CSS variables in `:root` (`--page-bg`,
 Done so far: Hero parallax, About with CV download, Stack, Education (timeline layout with per-section counter and `+`/`−`), Projects accordion (10 entries, images for 01/03/04/05/07/09/10, final disclaimer tooltip), Contact (frontend only, ink-swirl background), QuickNav 1–5, `--cream` palette test, assets reorganized into `assets/` and converted to WebP. First commit pushed to `main`; later changes may be uncommitted.
 
 Pending:
-- **Backend (started in `server/`):** Contact form sends nothing (`onSubmit` only `preventDefault`). Needs Resend integration, field validations/regex (rules already shown as help text under each field: subject 3–80, name 2–60, email ≤100, phone optional 8–15 digits, message 20–1000) and a honeypot anti-spam field.
+- **Backend (started in `server/`):** Contact form posts to `/api/contact` (Resend, static sender). Still needs: production hosting for the server, field validations/regex (rules already shown as help text under each field: subject 3–80, name 2–60, email ≤100, phone optional 8–15 digits, message 20–1000) and a honeypot anti-spam field.
 - **CV download rate limiter:** the PDF in `public/` is directly reachable, so a UI limiter is useless. Decide hosting first. Option A (recommended if on Cloudflare): rate-limiting rule on `/cv-yeshua-rodriguez.pdf` (e.g. 5 req/min/IP), no code. Option B: own endpoint (`/api/cv`) that applies the limiter and serves the PDF with `Content-Disposition: attachment`, PDF moved out of `public/`, button shows a message on `429`. Optional: Cloudflare Turnstile, download counter.
 - **Projects content:** images for 02/06/08, years (`year: null`), GitHub repos + `githubEnabled`. Project images 1/7/9/10 are 1–1.5 MB; re-export at ~1360 px wide.
 - **CV:** `documents/cvprueba.pdf` is currently published as the CV; replace with the final version when ready.
 - **Badges:** add rest of the badges references to education section.
-- **Tech debt:** `npm run lint` fails: unused `Tooltip` import in `App.jsx`, and `server/` linted as browser code (needs Node globals/ignore in `eslint.config.js`); `SectionTitle` dynamic-class bug (see Gotchas); `Layout.jsx`/other leftovers not reviewed.
+- **Tech debt:** `npm run lint` fails only on the unused `Tooltip` import in `App.jsx`; `SectionTitle` dynamic-class bug (see Gotchas); `Layout.jsx`/other leftovers not reviewed.
 - **`index.html`:** `<title>` is still `portafolio-yeshua`; no meta description/OG tags; favicon points to `/favicon.png` (decide whether to use `assets/img/iconos/` instead); confirm `lang`.
 - **QA:** the site has not been verified in a browser at mobile widths (QuickNav next to Hero, new sections). The Vite template `README.md` is unchanged.

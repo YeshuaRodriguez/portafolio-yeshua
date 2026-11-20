@@ -9,4 +9,8 @@ export default defineConfig({
     react(), tailwindcss(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+  server: {
+    // En desarrollo, /api va al server de Express (server/app.js)
+    proxy: { '/api': 'http://localhost:3000' },
+  },
 })

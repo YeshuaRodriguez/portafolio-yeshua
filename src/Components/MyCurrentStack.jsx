@@ -22,6 +22,7 @@ import logoExpo from "../../assets/img/Logos/LogoExpo.webp"
 import logoElectron from "../../assets/img/Logos/LogoElectron.webp"
 import logoClaude from "../../assets/img/Logos/LogoClaudecode.webp"
 import logoCodex from "../../assets/img/Logos/LogoCodex.webp"
+import logoDb2 from "../../assets/img/Logos/LogoDb2.webp"
 
 import { Brackets } from "lucide-react"
 import { CodeXml } from "lucide-react"
@@ -61,6 +62,7 @@ const stacks = [
       { name: "PostgreSQL", src: logoPostgres },
       { name: "MySQL", src: logoMysql },
       { name: "JSON", src: logoJson },
+      { name: "DB2", src: logoDb2 },
     ],
   },
   {

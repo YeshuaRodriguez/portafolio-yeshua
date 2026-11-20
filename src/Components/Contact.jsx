@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { ArrowRight } from "lucide-react"
 import inkSwirl from "../../assets/img/hero/remolino-tinta.webp"
 
@@ -42,9 +43,36 @@ function Field({ field }) {
     )
 }
 
+const statusMessages = {
+    sent: { text: "Message sent. Thanks!", className: "text-cream" },
+    error: { text: "Something went wrong, try again.", className: "text-red-primary" },
+}
+
 export default function Contact() {
-    // Solo frontend por ahora: el envío (Resend) y las validaciones se agregan después
-    const handleSubmit = (event) => event.preventDefault()
+    // idle | sending | sent | error. Sin validaciones por ahora, ver server/app.js
+    const [status, setStatus] = useState("idle")
+
+    const handleSubmit = async (event) => {
+        event.preventDefault()
+        const form = event.currentTarget
+        setStatus("sending")
+
+        try {
+            const response = await fetch("/api/contact", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(Object.fromEntries(new FormData(form))),
+            })
+            if (!response.ok) throw new Error(`HTTP ${response.status}`)
+            form.reset()
+            setStatus("sent")
+        } catch {
+            setStatus("error")
+        }
+    }
+
+    const isSending = status === "sending"
+    const statusMessage = statusMessages[status]
 
     return (
         <section id="contact" className="relative -mx-4 scroll-mt-10 overflow-hidden py-20 sm:-mx-6 lg:-mx-8">
@@ -76,10 +104,15 @@ export default function Contact() {
 
                     <button
                         type="submit"
-                        className="flex w-fit cursor-pointer items-center gap-3.5 rounded-[10px] border-2 border-red-primary bg-red-primary px-9 py-4 font-akira text-[15px] tracking-widest text-page-bg transition-opacity hover:opacity-90 hover:animate-pulse"
+                        disabled={isSending}
+                        className="flex w-fit cursor-pointer items-center gap-3.5 rounded-[10px] border-2 border-red-primary bg-red-primary px-9 py-4 font-akira text-[15px] tracking-widest text-page-bg transition-opacity hover:opacity-90 hover:animate-pulse disabled:cursor-wait disabled:opacity-60 disabled:hover:animate-none"
                     >
-                        SEND <ArrowRight size={18} aria-hidden="true" />
+                        {isSending ? "SENDING..." : "SEND"} <ArrowRight size={18} aria-hidden="true" />
                     </button>
+
+                    <p role="status" aria-live="polite" className={`min-h-5 text-sm tracking-wider ${statusMessage?.className ?? ""}`}>
+                        {statusMessage?.text ?? ""}
+                    </p>
                 </form>
 
             </div>
