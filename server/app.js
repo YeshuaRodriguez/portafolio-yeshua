@@ -1,6 +1,7 @@
 import express from "express";
 import { Resend } from "resend";
 import { httpServerHandler } from "cloudflare:node";
+import { env } from "cloudflare:workers";
 
 // Corre como Cloudflare Worker: Express escucha en un puerto "virtual" y
 // httpServerHandler le pasa las peticiones del Worker (ver wrangler.jsonc).
@@ -10,9 +11,10 @@ const app = express();
 app.use(express.json());
 
 // Config desde el env del Worker (vars + secretos; en local, server/.env).
+// Se lee con `env` de cloudflare:workers (process.env no recibía los secretos en producción).
 // MAIL_FROM: remitente del dominio verificado en Resend. MAIL_TO: correo que recibe los mensajes
 function getConfig() {
-    const { RESEND_API_KEY, MAIL_FROM, MAIL_TO } = process.env;
+    const { RESEND_API_KEY, MAIL_FROM, MAIL_TO } = env;
     const missing = Object.entries({ RESEND_API_KEY, MAIL_FROM, MAIL_TO })
         .filter(([, value]) => !value)
         .map(([key]) => key);
