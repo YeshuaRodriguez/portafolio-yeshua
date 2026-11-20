@@ -2,12 +2,15 @@ import { useEffect, useRef, useState } from "react"
 import { ArrowRight } from "lucide-react"
 import inkSwirl from "../../assets/img/hero/remolino-tinta.webp"
 
+// Las reglas (minLength/maxLength/pattern) son las mismas que valida server/app.js con Valibot
 const fields = [
-    { id: "subject", label: "SUBJECT", type: "text", placeholder: "What is this about?", help: "Required · 3 to 80 characters", required: true },
-    { id: "name", label: "NAME", type: "text", placeholder: "Your name", help: "Required · 2 to 60 characters", required: true, autoComplete: "name" },
-    { id: "email", label: "EMAIL", type: "email", placeholder: "you@email.com", help: "Required · valid email, up to 100 characters", required: true, autoComplete: "email" },
-    { id: "phone", label: "PHONE", type: "tel", placeholder: "+504 0000-0000", help: "Optional · digits only, 8 to 15 characters", required: false, autoComplete: "tel" },
-    { id: "message", label: "MESSAGE", type: "textarea", placeholder: "Tell me about your project...", help: "Required · 20 to 1000 characters", required: true },
+    { id: "subject", label: "SUBJECT", type: "text", placeholder: "What is this about?", help: "Required · 3 to 80 characters", required: true, minLength: 3, maxLength: 80 },
+    { id: "name", label: "NAME", type: "text", placeholder: "Your name", help: "Required · 2 to 60 characters", required: true, minLength: 2, maxLength: 60, autoComplete: "name" },
+    { id: "email", label: "EMAIL", type: "email", placeholder: "you@email.com", help: "Required · valid email, up to 100 characters", required: true, maxLength: 100, autoComplete: "email" },
+    // Acepta espacios, guiones, paréntesis y un + inicial; el server los quita y exige 8 a 15 dígitos.
+    // Los navegadores compilan `pattern` con el flag `v`: ( ) y - dentro de [] deben ir escapados
+    { id: "phone", label: "PHONE", type: "tel", placeholder: "+504 0000-0000", help: "Optional · digits only, 8 to 15 characters", required: false, maxLength: 25, pattern: "\\+?[\\d\\s\\(\\)\\-]{8,24}", autoComplete: "tel" },
+    { id: "message", label: "MESSAGE", type: "textarea", placeholder: "Tell me about your project...", help: "Required · 20 to 1000 characters", required: true, minLength: 20, maxLength: 1000 },
 ]
 
 const controlClass =
@@ -22,8 +25,9 @@ function RequiredMark() {
 }
 
 function Field({ field }) {
-    const { id, label, type, placeholder, help, required, autoComplete } = field
+    const { id, label, type, placeholder, help, required, autoComplete, minLength, maxLength, pattern } = field
     const isTextarea = type === "textarea"
+    const rules = { required, minLength, maxLength }
 
     return (
         <div className="flex flex-col gap-1.5">
@@ -32,9 +36,9 @@ function Field({ field }) {
             </label>
             <div className="relative">
                 {isTextarea ? (
-                    <textarea id={id} name={id} rows={4} placeholder={placeholder} className={`${controlClass} block resize-none ${required ? "pr-14" : ""}`} />
+                    <textarea id={id} name={id} rows={4} placeholder={placeholder} {...rules} className={`${controlClass} block resize-none ${required ? "pr-14" : ""}`} />
                 ) : (
-                    <input id={id} name={id} type={type} placeholder={placeholder} autoComplete={autoComplete} className={`${controlClass} ${required ? "pr-14" : ""}`} />
+                    <input id={id} name={id} type={type} placeholder={placeholder} autoComplete={autoComplete} {...rules} pattern={pattern} className={`${controlClass} ${required ? "pr-14" : ""}`} />
                 )}
                 {required && <RequiredMark />}
             </div>
@@ -46,6 +50,8 @@ function Field({ field }) {
 const statusMessages = {
     sent: { text: "Message sent. Thanks!", className: "text-cream" },
     captcha: { text: "Please complete the verification and try again.", className: "text-red-primary" },
+    invalid: { text: "Please check the fields and try again.", className: "text-red-primary" },
+    limit: { text: "Too many messages today. Please try again tomorrow.", className: "text-red-primary" },
     error: { text: "Something went wrong, try again.", className: "text-red-primary" },
 }
 
@@ -107,15 +113,22 @@ function useTurnstile(containerRef) {
 }
 
 export default function Contact() {
-    // idle | sending | sent | captcha | error. Sin validaciones de campos por ahora, ver server/app.js
+    // idle | sending | sent | captcha | invalid | limit | error
     const [status, setStatus] = useState("idle")
     const turnstileRef = useRef(null)
     const resetTurnstile = useTurnstile(turnstileRef)
+    // Momento en que se mostró el formulario: el server descarta envíos hechos en menos de 3 s
+    const startedAtRef = useRef(0)
+
+    useEffect(() => {
+        startedAtRef.current = Date.now()
+    }, [])
 
     const handleSubmit = async (event) => {
         event.preventDefault()
         const form = event.currentTarget
         const data = Object.fromEntries(new FormData(form))
+        data.elapsedMs = Date.now() - startedAtRef.current
 
         if (!data["cf-turnstile-response"]) {
             setStatus("captcha")
@@ -130,12 +143,13 @@ export default function Contact() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data),
             })
-            if (response.status === 403) {
-                setStatus("captcha")
+            const result = await response.json().catch(() => ({}))
+            if (!response.ok) {
+                setStatus(statusMessages[result.error] ? result.error : "error")
                 return
             }
-            if (!response.ok) throw new Error(`HTTP ${response.status}`)
             form.reset()
+            startedAtRef.current = Date.now()
             setStatus("sent")
         } catch {
             setStatus("error")
@@ -175,6 +189,12 @@ export default function Contact() {
                     {fields.map((field) => (
                         <Field key={field.id} field={field} />
                     ))}
+
+                    {/* Honeypot: invisible para personas; si un bot lo llena, el server finge éxito y no envía */}
+                    <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
+                        <label htmlFor="website">Website</label>
+                        <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+                    </div>
 
                     <div ref={turnstileRef} className="min-h-[65px] w-full" />
 

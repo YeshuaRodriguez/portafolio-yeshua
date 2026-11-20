@@ -13,7 +13,13 @@
   ],
   "vars": {
     "MAIL_FROM": "Portfolio <contact@mail.yeshuarodriguez.dev>",
-    "TURNSTILE_HOSTNAMES": "www.yeshuarodriguez.dev,yeshuarodriguez.dev"
+    // Hostnames aceptados para el header Origin y para la verificación de Turnstile
+    "ALLOWED_HOSTNAMES": "www.yeshuarodriguez.dev,yeshuarodriguez.dev",
+    // Tope global de correos por día (contador en KV)
+    "DAILY_LIMIT": "50"
   },
+  "kv_namespaces": [
+    { "binding": "CONTACT_LIMITS", "id": "ebb6f1bc7eef4aeca4faae33e5098021" }
+  ],
   "observability": { "enabled": true }
 }
