@@ -59,5 +59,5 @@ Pending:
 - **CV:** `documents/cvprueba.pdf` is currently published as the CV; replace with the final version when ready.
 - **Badges:** add rest of the badges references to education section.
 - **Tech debt:**  `SectionTitle` dynamic-class bug (see Gotchas); `Layout.jsx`/other leftovers not reviewed.
-- **`index.html`:** `<title>` is still `portafolio-yeshua`; no meta description/OG tags; favicon points to `/favicon.png` (decide whether to use `assets/img/iconos/` instead); confirm `lang`.
+- **`index.html`:** SEO/OG/Twitter tags done (OG image `public/og.jpg`, 1732×908, keep < 300 KB). Canonical URL is `https://www.yeshuarodriguez.dev/`; add a Cloudflare Redirect Rule root → `www`. Favicon still `/favicon.png` (decide whether to use `assets/img/iconos/`).
 - **QA:** the site has not been verified in a browser at mobile widths (QuickNav next to Hero, new sections). The Vite template `README.md` is unchanged.

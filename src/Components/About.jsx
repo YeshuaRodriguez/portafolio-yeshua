@@ -27,7 +27,7 @@ export default function About() {
                     </div>
                 </div>
             </div>
-            <a href="/cv-yeshua-rodriguez.pdf" download="Yeshua-Rodriguez-CV.pdf"><button className="bg-red-primary text-page-bg cursor-pointer p-3 rounded-md mt-20 tracking-wider font-bold hover:animate-pulse flex gap-4 border-2 border-red-400">Descargar CV <Download/></button></a>
+            <a href="/cv-yeshua-rodriguez.pdf" download="Yeshua-Rodriguez-CV.pdf"><button className="bg-red-primary text-page-bg cursor-pointer p-3 rounded-md mt-20 tracking-wider font-bold hover:animate-pulse flex gap-4 border-2 border-red-400">Download CV <Download/></button></a>
         </div>
     </>
 
