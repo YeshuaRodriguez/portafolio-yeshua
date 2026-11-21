@@ -3,20 +3,16 @@ import About from './Components/About'
 import MyCurrentStack from './Components/MyCurrentStack'
 import Education from './Components/Education'
 import './App.css'
-import QuickNav from './Components/QuickNav'
 import Projects from './Components/Projects'
 import Contact from './Components/Contact'
 
 function App() {
+  // pt-28 = alto de la MobileNav fija; en lg+ el padding lateral deja libres los rieles (index.css)
   return (
-    <main className=" flex flex-col min-h-screen bg-page-bg px-4 py-6 text-cream sm:px-6 lg:px-8 font-dm-sans gap-50">
+    <main className="flex min-h-screen flex-col gap-50 bg-page-bg px-4 pt-28 pb-6 font-dm-sans text-cream sm:px-6 lg:px-(--rail-clear) lg:pt-6">
 
-      <div className='flex flex-row justify-center items-center gap-0'>
-        <QuickNav/>
-        <Hero />
-        
-      </div>
-      
+      <Hero />
+
       <About/>
       <MyCurrentStack/>
       <Education/>

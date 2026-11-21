@@ -1,3 +1,5 @@
+import { motion } from "motion/react"
+import { inUp, inDown, inRight, fadeIn } from "../animations"
 import { useEffect, useRef, useState } from "react"
 import { ArrowRight } from "lucide-react"
 import inkSwirl from "../../assets/img/hero/remolino-tinta.webp"
@@ -24,13 +26,14 @@ function RequiredMark() {
     )
 }
 
-function Field({ field }) {
+// delay: para la cascada del formulario (cada campo entra 0.2 s después del anterior)
+function Field({ field, delay }) {
     const { id, label, type, placeholder, help, required, autoComplete, minLength, maxLength, pattern } = field
     const isTextarea = type === "textarea"
     const rules = { required, minLength, maxLength }
 
     return (
-        <div className="flex flex-col gap-1.5">
+        <motion.div className="flex flex-col gap-1.5" {...inRight({ delay })}>
             <label htmlFor={id} className="text-xs tracking-[0.14em]">
                 {label} {!required && <span className="tracking-wider text-cream/40">(OPTIONAL)</span>}
             </label>
@@ -43,7 +46,7 @@ function Field({ field }) {
                 {required && <RequiredMark />}
             </div>
             <span className="text-xs italic text-cream/40">{help}</span>
-        </div>
+        </motion.div>
     )
 }
 
@@ -163,7 +166,7 @@ export default function Contact() {
     const statusMessage = statusMessages[status]
 
     return (
-        <section id="contact" className="relative -mx-4 scroll-mt-10 overflow-hidden py-20 sm:-mx-6 lg:-mx-8">
+        <section id="contact" className="relative -mx-4 scroll-mt-10 overflow-hidden py-20 sm:-mx-6 lg:-mx-(--rail-clear)">
             <img
                 src={inkSwirl}
                 alt=""
@@ -175,19 +178,20 @@ export default function Contact() {
             <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-12 px-4 sm:px-6 lg:flex-row lg:gap-20 lg:px-8">
 
                 <div className="flex min-w-0 flex-1 flex-col justify-center gap-7">
-                    <p className="text-sm tracking-widest text-red-primary">5. 連絡</p>
+                    <motion.p className="text-sm tracking-widest text-red-primary" {...inRight()}>5. 連絡</motion.p>
                     <h2 className="flex flex-col leading-[0.95]">
-                        <span className="font-dm-sans text-6xl font-bold tracking-tighter sm:text-8xl lg:text-[110px] xl:text-[124px]">CONTACT</span>
-                        <span className="mt-3 font-akira text-7xl font-black text-red-primary sm:text-9xl lg:text-[120px] xl:text-[150px]">ME</span>
+                        <motion.span className="font-dm-sans text-6xl font-bold tracking-tighter sm:text-8xl lg:text-[110px] xl:text-[124px]" {...inUp()}>CONTACT</motion.span>
+                        <motion.span className="mt-3 font-akira text-7xl font-black text-red-primary sm:text-9xl lg:text-[120px] xl:text-[150px]" {...inDown()}>ME</motion.span>
                     </h2>
-                    <p className="max-w-[420px] text-xl leading-normal text-cream/70">
+                    <motion.p className="max-w-[420px] text-xl leading-normal text-cream/70" {...fadeIn()}>
                         Got an idea, a project or just want to say hi? Send me a message and let's turn it into something real.
-                    </p>
+                    </motion.p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="flex w-full shrink-0 flex-col justify-center gap-5 lg:w-[520px] xl:w-[560px]">
-                    {fields.map((field) => (
-                        <Field key={field.id} field={field} />
+                    {/* Cascada de arriba hacia abajo: 0.2 s, 0.4 s, 0.6 s... y el botón al final */}
+                    {fields.map((field, i) => (
+                        <Field key={field.id} field={field} delay={0.2 * (i + 1)} />
                     ))}
 
                     {/* Honeypot: invisible para personas; si un bot lo llena, el server finge éxito y no envía */}
@@ -198,6 +202,8 @@ export default function Contact() {
 
                     <div ref={turnstileRef} className="min-h-[65px] w-full" />
 
+                    {/* Wrapper animado: el botón tiene su propia transición de opacidad (hover/disabled) */}
+                    <motion.div {...inRight({ delay: 0.2 * (fields.length + 1) })}>
                     <button
                         type="submit"
                         disabled={isSending}
@@ -205,6 +211,7 @@ export default function Contact() {
                     >
                         {isSending ? "SENDING..." : "SEND"} <ArrowRight size={18} aria-hidden="true" />
                     </button>
+                    </motion.div>
 
                     <p role="status" aria-live="polite" className={`min-h-5 text-sm tracking-wider ${statusMessage?.className ?? ""}`}>
                         {statusMessage?.text ?? ""}

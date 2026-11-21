@@ -1,3 +1,5 @@
+import { motion } from "motion/react"
+import { inUp, inDown, inRight, fadeIn } from "../animations"
 import logoReact from "../../assets/img/Logos/LogoReact.webp"
 import logoVite from "../../assets/img/Logos/LogoVite.webp"
 import logoTailwind from "../../assets/img/Logos/LogoTailwind.webp"
@@ -101,12 +103,22 @@ const stacks = [
   },
 ]
 
-function TechItem({ tech }) {
+// Hover: el logo crece un poco con un rebote suave (solo con mouse; con reduced motion no se mueve).
+const logoHover = {
+  hover: { scale: 1.1, transition: { type: "spring", stiffness: 400, damping: 15 } },
+}
+
+// delay: cascada dentro de cada tarjeta (cada tecnología entra 0.1 s después de la anterior)
+function TechItem({ tech, delay }) {
   const fallback = tech.name.slice(0, 2).toUpperCase()
 
   return (
-    <li className="flex items-center gap-3 rounded-2xl border border-cream/10 bg-cream/5 px-3 py-2 transition-colors hover:bg-cream/10">
-      <div className="flex h-[50px] w-[50px] items-center justify-center overflow-hidden rounded-xl">
+    <motion.li
+      className="flex items-center gap-3 rounded-2xl border border-cream/10 bg-cream/5 px-3 py-2 transition-colors hover:bg-cream/10"
+      {...inUp({ distance: 16, delay })}
+      whileHover="hover"
+    >
+      <motion.div variants={logoHover} className="flex h-[50px] w-[50px] items-center justify-center overflow-hidden rounded-xl">
         {tech.src ? (
           <img
             src={tech.src}
@@ -119,24 +131,24 @@ function TechItem({ tech }) {
             {fallback}
           </span>
         )}
-      </div>
+      </motion.div>
       <span className="text-lg font-light text-cream/90 tracking-wider">{tech.name}</span>
-    </li>
+    </motion.li>
   )
 }
 
 function StackBlock({ title, techs, img }) {
   return (
     <article className="rounded-[1.75rem] p-5">
-      <div className="mb-4 flex items-center gap-3">
+      <motion.div className="mb-4 flex items-center gap-3" {...inRight()}>
         {img ? <span className="text-cream/80">{img}</span> : null}
-        <h2 className="text-lg font-semibold uppercase tracking-[0.25em] text-/80">
+        <h2 className="text-lg font-semibold uppercase tracking-[0.25em] text-cream/80">
           {title}
         </h2>
-      </div>
+      </motion.div>
       <ul className="grid gap-3">
-        {techs.map((tech) => (
-          <TechItem key={tech.name} tech={tech} />
+        {techs.map((tech, i) => (
+          <TechItem key={tech.name} tech={tech} delay={0.1 * (i + 1)} />
         ))}
       </ul>
     </article>
@@ -145,14 +157,15 @@ function StackBlock({ title, techs, img }) {
 
 export default function MyCurrentStack() {
   return (
-    <section className="mx-auto w-full max-w-7xl py-12">
+    <section id="stack" className="mx-auto w-full max-w-7xl scroll-mt-10 py-12">
       <div className="mb-8 ">
         <h1 className="text-4xl font-black tracking-tight sm:text-5xl flex flex-col justify-center font-dm-sans tracking-widest">
-          MY CURRENT <span className="text-red-primary text-7xl font-akira">STACK</span>
+          <motion.span {...inUp()}>MY CURRENT</motion.span>
+          <motion.span className="text-red-primary text-7xl font-akira" {...inDown()}>STACK</motion.span>
         </h1>
-        <p className="mt-3 text-sm font-medium text-cream/60 font-dm-sans tracking-wider">
+        <motion.p className="mt-3 text-sm font-medium text-cream/60 font-dm-sans tracking-wider" {...fadeIn()}>
           Tech stack by category
-        </p>
+        </motion.p>
       </div>
 
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">

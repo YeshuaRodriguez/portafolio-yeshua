@@ -1,9 +1,11 @@
+import { motion } from "motion/react"
+import { inUp, inDown } from "../../../animations"
 import { useEffect, useRef, useState } from "react"
 import { AlertCircle } from "lucide-react"
 
 // alert: nodo opcional (ej. <Tooltip .../>) que se muestra al hacer click en el ícono
 // alertClassName: posición/ancho del popup (clases completas, ver gotcha de Tailwind)
-export default function SectionTitle({title, subtitle, subtitleX=2, subtitleY=5, alert=null, alertClassName="absolute right-0 top-8 w-72"}){
+export default function SectionTitle({title, subtitle, alert=null, alertClassName="absolute right-0 top-8 w-72"}){
 
     const [open, setOpen] = useState(false)
     const alertRef = useRef(null)
@@ -31,8 +33,11 @@ export default function SectionTitle({title, subtitle, subtitleX=2, subtitleY=5,
         <>
             <div className="flex flex-col justify-center items-center">
             <div className="relative">
-            <h1 className='text-6xl font-bold font-akira text-end'>{title}
-            <p className={`z-50 text-lg text-red-primary text-md font-bold -translate-y-${subtitleY} -translate-x--${subtitleX}`}>{subtitle}</p>
+            {/* Título arriba sube (inUp) y subtítulo abajo baja (inDown): salen "del medio" */}
+            <h1 className='text-4xl font-bold font-akira text-end sm:text-6xl'>
+            <motion.span className="block" {...inUp()}>{title}</motion.span>
+            {/* clase fija (no dinámica): Tailwind v4 solo genera clases escritas completas */}
+            <motion.span className="relative z-50 block -translate-y-2 text-lg sm:-translate-y-3 font-bold text-red-primary" {...inDown()}>{subtitle}</motion.span>
             </h1>
             {alert && (
                 <div ref={alertRef} className="absolute -right-8 -top-2 z-50">

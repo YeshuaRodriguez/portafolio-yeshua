@@ -1,10 +1,40 @@
+import { animate, motion, useMotionValue, useMotionValueEvent } from "motion/react"
+import { inUp, inDown, fadeIn } from "../animations"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 
 const stateClasses = {
     active: "bg-active",
     inactive: "bg-inactive",
     inProgress: "bg-inProgress",
+}
+
+// Timeline: la línea se dibuja de arriba hacia abajo (progress 0 → 1 = scaleY) y
+// cada rombo aparece justo cuando la línea llega a su altura. La altura se mide
+// al arrancar, así funciona igual con las secciones abiertas o cerradas.
+const LINE_DURATION = 1.3
+
+function TimelineDiamond({ progress, containerRef }) {
+    const ref = useRef(null)
+    const [shown, setShown] = useState(false)
+
+    useMotionValueEvent(progress, "change", (p) => {
+        if (shown || !ref.current || !containerRef.current) return
+        const c = containerRef.current.getBoundingClientRect()
+        const d = ref.current.getBoundingClientRect()
+        if (p >= (d.top + d.height / 2 - c.top) / c.height) setShown(true)
+    })
+
+    return (
+        <motion.span
+            ref={ref}
+            aria-hidden="true"
+            className="absolute -left-[46px] top-5 h-[18px] w-[18px] rotate-45 border-[3px] border-page-bg bg-red-primary"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={shown ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
+            transition={{ type: "spring", stiffness: 500, damping: 18 }}
+        />
+    )
 }
 
 function CurrentState({ state }) {
@@ -45,6 +75,13 @@ const education = [
 function Education() {
 
     const [closed, setClosed] = useState({})
+    const timelineRef = useRef(null)
+    const lineProgress = useMotionValue(0)
+
+    const drawTimeline = () => {
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        animate(lineProgress, 1, { duration: reduce ? 0 : LINE_DURATION, delay: reduce ? 0 : 0.2, ease: "easeInOut" })
+    }
 
     const toggle = (type) => setClosed((prev) => ({ ...prev, [type]: !prev[type] }))
 
@@ -53,21 +90,32 @@ function Education() {
         <section id="education" className="mx-auto flex w-full max-w-6xl scroll-mt-10 flex-col gap-12 lg:flex-row lg:gap-16">
 
             <div className="flex w-full shrink-0 flex-col gap-3.5 lg:w-[340px]">
-                <h2 className="font-akira text-[34px] font-black tracking-wide">EDUCATION</h2>
-                <p className="text-sm tracking-widest text-red-primary">3. 私の教育</p>
+                <motion.h2 className="font-akira text-[34px] font-black tracking-wide" {...inUp()}>EDUCATION</motion.h2>
+                <motion.p className="text-sm tracking-widest text-red-primary" {...inDown()}>3. 私の教育</motion.p>
                 <hr className="my-2.5 h-0.5 w-16 border-0 bg-cream" />
-                <p className="text-[17px] leading-snug tracking-wider">COMPUTER SCIENCE ENGINEERING DEGREE</p>
-                <p className="text-[13px] italic text-cream/70">Universidad Católica de Honduras - 2026</p>
+                <motion.p className="text-[17px] leading-snug tracking-wider" {...fadeIn()}>COMPUTER SCIENCE ENGINEERING DEGREE</motion.p>
+                <motion.p className="text-[13px] italic text-cream/70" {...fadeIn({ delay: 0.35 })}>Universidad Católica de Honduras - 2026</motion.p>
             </div>
 
-            <div className="relative flex min-w-0 flex-1 flex-col gap-3 border-l-2 border-cream pl-9">
+            {/* pl-[38px] = antes pl-9 + border-l-2: la línea ahora es un div aparte para poder animarla */}
+            <motion.div
+                ref={timelineRef}
+                className="relative flex min-w-0 flex-1 flex-col gap-3 pl-[38px]"
+                viewport={{ once: true, amount: 0.2 }}
+                onViewportEnter={drawTimeline}
+            >
+                <motion.div
+                    aria-hidden="true"
+                    className="absolute top-0 left-0 h-full w-0.5 origin-top bg-cream"
+                    style={{ scaleY: lineProgress }}
+                />
                 {Object.entries(sections).map(([type, { title }]) => {
                     const items = education.filter((item) => item.type === type)
                     const isOpen = !closed[type]
 
                     return (
                         <div key={type} className="relative">
-                            <span aria-hidden="true" className="absolute -left-[46px] top-5 h-[18px] w-[18px] rotate-45 border-[3px] border-page-bg bg-red-primary" />
+                            <TimelineDiamond progress={lineProgress} containerRef={timelineRef} />
 
                             <button
                                 type="button"
@@ -82,22 +130,23 @@ function Education() {
 
                             {isOpen && (
                                 <ul className="flex flex-col gap-0.5 pb-3.5 pt-2 text-start">
-                                    {items.map((item) => (
-                                        <li key={item.name} className="flex items-center gap-2 py-1.5">
+                                    {/* Cascada: cada registro entra 0.1 s después del anterior (y otra vez al reabrir la sección) */}
+                                    {items.map((item, i) => (
+                                        <motion.li key={item.name} className="flex items-center gap-2 py-1.5" {...inDown({ delay: 0.1 * (i + 1) })}>
                                             <CurrentState state={item.status} />
                                             <span>
                                                 {item.link
                                                     ? <a href={item.link} target="_blank" rel="noopener noreferrer" className="underline decoration-cream/30 underline-offset-4 transition-colors hover:text-red-primary">{item.name}</a>
                                                     : item.name} | <span className="font-light text-cream/30">{item.issuer}{item.year ? ` - ${item.year}` : ""}</span>
                                             </span>
-                                        </li>
+                                        </motion.li>
                                     ))}
                                 </ul>
                             )}
                         </div>
                     )
                 })}
-            </div>
+            </motion.div>
 
         </section>
 

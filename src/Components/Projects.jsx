@@ -1,3 +1,5 @@
+import { motion } from "motion/react"
+import { inRight } from "../animations"
 import { useState } from "react"
 import { Plus, Minus, ArrowUpRight } from "lucide-react"
 import SectionTitle from "./ui/titles/SectionTitle"
@@ -19,7 +21,7 @@ const projects = [
         id: "01",
         name: "Corporate Landing Page and Administrative Back Office",
         stack: ["React", "Express", "Auth0"],
-        year: null,
+        year: 2026,
         description: "Development of a corporate web platform featuring an analytics dashboard, activity logs, ticketing system, and user and role management, establishing the company's digital presence to attract potential new clients.",
         image: project1Img,
         imageEnabled: true,
@@ -31,7 +33,7 @@ const projects = [
         id: "02",
         name: "Internal Reporting Portal",
         stack: ["React", "IBM i DB2"],
-        year: null,
+        year: 2026,
         description: "Development of an internal portal for accessing daily reports, automatically updated through SQL queries and connections to IBM i (AS/400) databases using authorized credentials.",
         image: null,
         imageEnabled: false,
@@ -43,7 +45,7 @@ const projects = [
         id: "03",
         name: "CTF File Parser",
         stack: ["Electron", "JSON"],
-        year: null,
+        year: 2026,
         description: "Development of a desktop application to process CTF files in TC05 TCR0 format and convert their records into human-readable text using a predefined structure.",
         image: project3Img,
         imageEnabled: true,
@@ -55,7 +57,7 @@ const projects = [
         id: "04",
         name: "BIN File Analysis Application",
         stack: ["Electron", "JSON"],
-        year: null,
+        year: 2026,
         description: "Development of a desktop application for analyzing and recounting records in Ficohsa BIN files received from the headquarters through a shared folder.",
         image: project4Img,
         imageEnabled: true,
@@ -67,7 +69,7 @@ const projects = [
         id: "05",
         name: "POS Terminal Transaction Bus",
         stack: ["Node.js", "ISO 8583", "TCP"],
-        year: null,
+        year: 2026,
         description: "Development of a Node.js-based transaction bus for receiving, parsing, storing, and converting JSON messages into ISO 8583 format, followed by routing them to an authorization server for processing. Its architecture supports future integrations and transaction message monitoring.",
         image: project5Img,
         imageEnabled: true,
@@ -79,7 +81,7 @@ const projects = [
         id: "06",
         name: "Landing Pages for Small Businesses",
         stack: ["Next.js", "Express"],
-        year: null,
+        year: 2026,
         description: "Design and development of websites for small businesses, aimed at strengthening their digital presence and commercial visibility.",
         image: null,
         imageEnabled: false,
@@ -91,7 +93,7 @@ const projects = [
         id: "07",
         name: "IBM i Infrastructure Monitoring",
         stack: ["Zabbix", "SNMP"],
-        year: null,
+        year: 2026,
         description: "Implementation of server monitoring for IBM i (AS/400) environments using Zabbix 7.0.32, including the creation and configuration of SNMP metrics, primarily to monitor CPU, RAM, and ASP utilization.",
         image: project7Img,
         imageEnabled: true,
@@ -103,7 +105,7 @@ const projects = [
         id: "08",
         name: "Academic Supervision Dashboard",
         stack: ["React", "TypeScript", "AWS"],
-        year: null,
+        year: 2025,
         description: "Led the frontend team in an academic project focused on developing a web-based classroom supervision and monitoring interface, implementing React components and CRUD operations.",
         image: null,
         imageEnabled: false,
@@ -115,7 +117,7 @@ const projects = [
         id: "09",
         name: "Cloud Infrastructure Prototyping",
         stack: ["AWS"],
-        year: null,
+        year: 2026,
         description: "Design and prototyping of an enterprise cloud infrastructure, intended for future implementation and deployment.",
         image: project9Img,
         imageEnabled: true,
@@ -127,13 +129,13 @@ const projects = [
         id: "10",
         name: "Web Portfolio",
         stack: ["React", "Tailwind"],
-        year: null,
+        year: 2026,
         description: "Personal portfolio built with React, Vite and Tailwind CSS, featuring a mouse-driven parallax hero, animated sections, a quick navigation menu and an expandable projects showcase.",
         image: project10Img,
         imageEnabled: true,
         techs: ["React", "Vite", "Tailwind CSS", "Motion", "JavaScript"],
-        github: "",
-        githubEnabled: false,
+        github: "https://github.com/YeshuaRodriguez/portafolio-yeshua",
+        githubEnabled: true,
     },
 ]
 
@@ -164,11 +166,12 @@ function ProjectImage({ project }) {
     )
 }
 
-function ProjectRow({ project, isOpen, onToggle }) {
+// delay: cascada de la lista (cada fila entra 0.1 s después de la anterior)
+function ProjectRow({ project, isOpen, onToggle, delay }) {
     const panelId = `project-panel-${project.id}`
 
     return (
-        <li className={isOpen ? "border-b border-page-bg bg-cream text-page-bg" : "border-b border-cream/30"}>
+        <motion.li className={isOpen ? "border-b border-page-bg bg-cream text-page-bg" : "border-b border-cream/30"} {...inRight({ delay })}>
             <button
                 type="button"
                 onClick={onToggle}
@@ -219,7 +222,7 @@ function ProjectRow({ project, isOpen, onToggle }) {
                     </div>
                 </div>
             )}
-        </li>
+        </motion.li>
     )
 }
 
@@ -266,9 +269,11 @@ export default function Projects() {
             />
 
             <ul className="flex flex-col border-t-2 border-cream">
-                {projects.map((project) => (
+                {/* Cascada: 0.1 s, 0.2 s ... 1 s para las 10 filas */}
+                {projects.map((project, i) => (
                     <ProjectRow
                         key={project.id}
+                        delay={0.1 * (i + 1)}
                         project={project}
                         isOpen={openId === project.id}
                         onToggle={() => toggle(project.id)}

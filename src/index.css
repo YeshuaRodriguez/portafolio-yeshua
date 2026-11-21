@@ -30,6 +30,21 @@
 
   --cream: #e8e0d5;
 
+  /* Rieles simétricos (desktop, lg+): medidas del diseño a 1440 px.
+     inset = distancia del riel al borde (84 px a 1440, centrado en pantallas
+     más anchas); clear = padding lateral del contenido (riel 96 + 40 de aire);
+     h = alto de los rieles, igual al de la imagen del Hero (16:10). */
+  --rail-inset: max(2rem, calc(50vw - 636px));
+  --rail-clear: calc(var(--rail-inset) + 8.5rem);
+  --rail-h: min(calc((100vw - 2 * var(--rail-clear)) * 0.625), 85vh);
+
+}
+
+/* En móvil la MobileNav es fija arriba: que los saltos a sección no queden debajo. */
+@media (width < 64rem) {
+  html {
+    scroll-padding-top: 6.5rem;
+  }
 }
 
 @theme {
